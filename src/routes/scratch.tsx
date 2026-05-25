@@ -59,21 +59,8 @@ function Scratch() {
     }
   };
 
-  const handleShare = async () => {
-    const msg = `🎉 I just won ₹${amount} OFF at Ceevees Mart Back-to-School Scratch & Win! ${SHARE_MESSAGE}`;
-    window.open(whatsappShareUrl(msg), "_blank");
-    try {
-      if (mobile) {
-        const res = await sharedFn({ data: { mobile } });
-        updateSession({ shared: true, couponCode: res.couponCode });
-      } else {
-        updateSession({ shared: true });
-      }
-    } catch {
-      updateSession({ shared: true });
-    }
-    toast.success("Reward unlocked! 🎁");
-    setTimeout(() => navigate({ to: "/reward" }), 600);
+  const handleContinue = () => {
+    navigate({ to: "/reward" });
   };
 
   return (
