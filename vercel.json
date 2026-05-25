@@ -1,8 +1,15 @@
 {
   "version": 2,
-  "build": {
-    "env": {
-      "SERVER_PRESET": "vercel"
+  "cleanUrls": true,
+  "outputDirectory": "dist/client",
+  "rewrites": [
+    {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api"
     }
-  }
+  ]
 }
