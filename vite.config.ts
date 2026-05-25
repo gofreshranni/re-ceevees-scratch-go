@@ -8,12 +8,19 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
 // @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
+// Determine the server preset dynamically based on the cloud hosting provider environment
+const getPreset = () => {
+  if (process.env.VERCEL || process.env.VERCEL_ENV) return "vercel";
+  if (process.env.NETLIFY || process.env.NETLIFY_ENV) return "netlify";
+  return undefined; // Local fallback
+};
+
 export default defineConfig({
-  cloudflare: false,
+  cloudflare: !process.env.VERCEL && !process.env.NETLIFY,
   tanstackStart: {
     server: { 
       entry: "server",
-      preset: "vercel"
+      preset: getPreset()
     },
   },
 });
