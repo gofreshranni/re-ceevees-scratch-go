@@ -23,7 +23,23 @@ import rewardBanner3 from "@/assets/reward-banner-3.jpg";
 import rewardBanner4 from "@/assets/reward-banner-4.jpg";
 
 export const Route = createFileRoute("/reward")({
-  head: () => ({ meta: [{ title: "Your Reward · Ceevees Mart" }] }),
+  head: () => ({
+    meta: [
+      { title: "Your Reward · Ceevees Mart" },
+      { name: "description", content: "Claim your exciting scratch card discount or gift at Ceevees Mart, Ranni!" },
+      { property: "og:title", content: "🎁 Your Reward · Ceevees Mart Scratch & Win!" },
+      { property: "og:description", content: "Mega Back to School Offers! Scratch to win instant cash discounts, free notebooks & gifts!" },
+      { property: "og:image", content: "/whatsapp-share.png" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "800" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "🎁 Your Reward · Ceevees Mart Scratch & Win!" },
+      { name: "twitter:description", content: "Mega Back to School Offers! Scratch to win instant cash discounts, free notebooks & gifts!" },
+      { name: "twitter:image", content: "/whatsapp-share.png" },
+    ],
+  }),
   component: RewardPage,
 });
 

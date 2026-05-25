@@ -11,7 +11,23 @@ import { markScratched } from "@/lib/campaign.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/scratch")({
-  head: () => ({ meta: [{ title: "Scratch Your Card · Ceevees Mart" }] }),
+  head: () => ({
+    meta: [
+      { title: "Scratch Your Card · Ceevees Mart" },
+      { name: "description", content: "Scratch your card online to reveal your exciting gift or instant discount at Ceevees Mart, Ranni." },
+      { property: "og:title", content: "🎁 Scratch Your Card · Ceevees Mart Scratch & Win!" },
+      { property: "og:description", content: "Mega Back to School Offers! Scratch to win instant cash discounts, free notebooks & gifts!" },
+      { property: "og:image", content: "/whatsapp-share.png" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "800" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "🎁 Scratch Your Card · Ceevees Mart Scratch & Win!" },
+      { name: "twitter:description", content: "Mega Back to School Offers! Scratch to win instant cash discounts, free notebooks & gifts!" },
+      { name: "twitter:image", content: "/whatsapp-share.png" },
+    ],
+  }),
   component: Scratch,
 });
 

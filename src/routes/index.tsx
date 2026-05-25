@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import logo from "@/assets/ceevees-logo.png";
 import { Button } from "@/components/ui/button";
 import offerChaptersCombo from "@/assets/offer-chapters-combo.jpg";
@@ -10,14 +11,25 @@ import bagCollection1 from "@/assets/bag-collection-1.png";
 import bagCollection2 from "@/assets/bag-collection-2.png";
 import bagCollection3 from "@/assets/bag-collection-3.jpg";
 import bagCollection4 from "@/assets/bag-collection-4.jpg";
+import { getSession } from "@/lib/campaign";
+import { Gift, Sparkles, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Ceevees Mart — Back to School Scratch & Win" },
-      { name: "description", content: "Scratch & Win exciting school gifts, free notebooks, discounts and mega prizes at Ceevees Mart's Back to School campaign." },
-      { property: "og:title", content: "Ceevees Mart — Back to School Scratch & Win" },
-      { property: "og:description", content: "Try your luck. Win free notebooks, school bags and instant discounts at Ceevees Mart, Ranni." },
+      { name: "description", content: "Mega Back to School Offers! Scratch to win instant cash discounts, free notebooks & gifts!" },
+      { property: "og:title", content: "🎁 Ceevees Mart — Back to School Scratch & Win!" },
+      { property: "og:description", content: "Mega Back to School Offers! Scratch to win instant cash discounts, free notebooks & gifts!" },
+      { property: "og:image", content: "/whatsapp-share.png" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "800" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "🎁 Ceevees Mart — Back to School Scratch & Win!" },
+      { name: "twitter:description", content: "Mega Back to School Offers! Scratch to win instant cash discounts, free notebooks & gifts!" },
+      { name: "twitter:image", content: "/whatsapp-share.png" },
     ],
   }),
   component: LandingPage,
@@ -49,6 +61,18 @@ const CATEGORIES = [
 ];
 
 function LandingPage() {
+  const [showPromoPopup, setShowPromoPopup] = useState(false);
+
+  useEffect(() => {
+    const s = getSession();
+    if (!s) {
+      const timer = setTimeout(() => {
+        setShowPromoPopup(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen">
       <section className="relative overflow-hidden bg-gradient-to-br from-[oklch(0.45_0.18_250)] via-[oklch(0.38_0.20_255)] to-[oklch(0.28_0.18_260)]">
@@ -255,6 +279,63 @@ function LandingPage() {
         <p className="font-bold">Ceevees Mart · C V Mathew & Co. Since 1975</p>
         <p className="mt-1 opacity-70">Ranni · Visit us before 30 June 2026</p>
       </footer>
+
+      {/* Breathtaking Scratch Promotion Modal Popup */}
+      <AnimatePresence>
+        {showPromoPopup && (
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ type: "spring", damping: 15, duration: 0.6 }}
+              className="bg-zinc-950 border border-gold/40 rounded-3xl w-full max-w-sm overflow-hidden shadow-pop text-zinc-100 relative p-6 space-y-5 text-center"
+            >
+              {/* Top Close Button */}
+              <button
+                onClick={() => setShowPromoPopup(false)}
+                className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 transition-colors p-1"
+              >
+                <X className="size-5" />
+              </button>
+
+              <div className="space-y-4">
+                {/* Floating Gift Icon */}
+                <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-gradient-gold shadow-pop animate-bounce">
+                  <Gift className="size-8 text-gold-foreground" />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-1.5 text-gold">
+                    <Sparkles className="size-4 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">CeeVees Mart Campaign</span>
+                  </div>
+                  <h3 className="text-2xl font-black uppercase tracking-tight text-white leading-none">
+                    🎒 Back To School <br />
+                    <span className="bg-gradient-gold bg-clip-text text-transparent">Scratch & Win!</span>
+                  </h3>
+                  <p className="text-xs text-zinc-400 leading-normal max-w-[280px] mx-auto">
+                    Every scratch card wins instant cash discounts, free notebooks, and exclusive gifts in Ranni.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2.5 pt-2">
+                <Button asChild variant="gold" size="xl" className="w-full shadow-pop font-black uppercase tracking-wide py-6 text-sm">
+                  <Link to="/register">🎁 Claim My Free Card</Link>
+                </Button>
+                
+                <button
+                  onClick={() => setShowPromoPopup(false)}
+                  className="w-full text-center text-[11px] font-bold text-zinc-500 hover:text-zinc-400 transition-colors py-1.5"
+                >
+                  No thanks, just browsing
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
