@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      registrations: {
+        Row: {
+          cash_amount: number
+          coupon_code: string | null
+          created_at: string
+          email: string | null
+          id: string
+          mobile: string
+          name: string
+          scratched: boolean
+          shared: boolean
+          updated_at: string
+        }
+        Insert: {
+          cash_amount: number
+          coupon_code?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          mobile: string
+          name: string
+          scratched?: boolean
+          shared?: boolean
+          updated_at?: string
+        }
+        Update: {
+          cash_amount?: number
+          coupon_code?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          mobile?: string
+          name?: string
+          scratched?: boolean
+          shared?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
