@@ -49,7 +49,7 @@ function LandingPage() {
     <div className="min-h-screen">
       <BrandHeader />
 
-      <section className="relative overflow-hidden bg-gradient-hero">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[oklch(0.45_0.18_250)] via-[oklch(0.38_0.20_255)] to-[oklch(0.28_0.18_260)]">
         <div className="absolute inset-0 opacity-20"
           style={{
             backgroundImage:
@@ -71,11 +71,13 @@ function LandingPage() {
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl font-black uppercase leading-[0.9] md:text-7xl"
+            className="text-5xl font-black uppercase leading-[1.05] md:text-7xl md:leading-[1.05]"
             style={{ textShadow: "0 4px 0 rgba(0,0,0,0.2)" }}
           >
-            Back to <br />
-            <span className="inline-block bg-gradient-gold bg-clip-text text-transparent">School</span>
+            Back to{" "}
+            <span className="inline-block bg-gradient-gold bg-clip-text px-2 text-transparent">
+              School
+            </span>
             <br />
             Scratch & Win
           </motion.h1>
@@ -101,20 +103,6 @@ function LandingPage() {
             <p className="mt-3 text-xs opacity-80">Free · 1 card per mobile number</p>
           </motion.div>
 
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            {["🎒", "📚", "✏️", "🧃", "🍱", "📐"].map((e, i) => (
-              <motion.span
-                key={i}
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: [0, -20, 0], opacity: 0.5 }}
-                transition={{ duration: 3 + i * 0.5, repeat: Infinity, delay: i * 0.3 }}
-                className="absolute text-3xl md:text-5xl"
-                style={{ left: `${10 + i * 14}%`, top: `${20 + (i % 3) * 25}%` }}
-              >
-                {e}
-              </motion.span>
-            ))}
-          </div>
         </div>
       </section>
 
