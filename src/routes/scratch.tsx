@@ -18,7 +18,7 @@ export const Route = createFileRoute("/scratch")({
 function Scratch() {
   const navigate = useNavigate();
   const scratchFn = useServerFn(markScratched);
-  const sharedFn = useServerFn(markShared);
+  
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [amount, setAmount] = useState<number | null>(null);
