@@ -12,6 +12,7 @@ export function ScratchCard({ width = 320, height = 320, onComplete, children }:
   const wrapRef = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(false);
   const isDrawing = useRef(false);
+  const scratchCount = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -55,6 +56,7 @@ export function ScratchCard({ width = 320, height = 320, onComplete, children }:
     ctx.beginPath();
     ctx.arc(cx, cy, 28, 0, Math.PI * 2);
     ctx.fill();
+    scratchCount.current += 1;
   };
 
   const autoReveal = () => {
@@ -95,7 +97,7 @@ export function ScratchCard({ width = 320, height = 320, onComplete, children }:
     }
     const total = pixels.length / (4 * step);
     // Auto-reveal quickly so the prize and celebration are easy to reach.
-    if (cleared / total > 0.08) {
+    if (cleared / total > 0.08 || scratchCount.current >= 6) {
       autoReveal();
     }
   };
