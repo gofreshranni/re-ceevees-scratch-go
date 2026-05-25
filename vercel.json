@@ -4,6 +4,5 @@
     "env": {
       "SERVER_PRESET": "vercel"
     }
-  },
-  "outputDirectory": ".vercel/output"
+  }
 }
