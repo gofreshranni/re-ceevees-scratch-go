@@ -2,10 +2,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import { useServerFn } from "@tanstack/react-start";
 import { BrandHeader } from "@/components/BrandHeader";
 import { ScratchCard } from "@/components/ScratchCard";
 import { Button } from "@/components/ui/button";
-import { getSession, pickCashAmount, SHARE_MESSAGE, updateSession, whatsappShareUrl } from "@/lib/campaign";
+import { getSession, SHARE_MESSAGE, updateSession, whatsappShareUrl } from "@/lib/campaign";
+import { markScratched, markShared } from "@/lib/campaign.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/scratch")({
@@ -15,23 +17,22 @@ export const Route = createFileRoute("/scratch")({
 
 function Scratch() {
   const navigate = useNavigate();
+  const scratchFn = useServerFn(markScratched);
+  const sharedFn = useServerFn(markShared);
   const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
   const [amount, setAmount] = useState<number | null>(null);
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const s = getSession();
-    if (!s) {
+    if (!s || !s.mobile) {
       navigate({ to: "/register" });
       return;
     }
     setName(s.name);
-    let a = s.cashAmount;
-    if (!a) {
-      a = pickCashAmount();
-      updateSession({ cashAmount: a });
-    }
-    setAmount(a);
+    setMobile(s.mobile);
+    setAmount(s.cashAmount ?? null);
     if (s.scratched) setShowPopup(true);
   }, [navigate]);
 
@@ -47,20 +48,32 @@ function Scratch() {
     setTimeout(() => confetti({ particleCount: 140, angle: 120, spread: 70, origin: { x: 1 }, zIndex: 1000 }), 450);
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     updateSession({ scratched: true });
     fireConfetti();
     setTimeout(() => setShowPopup(true), 400);
+    try {
+      if (mobile) await scratchFn({ data: { mobile } });
+    } catch {
+      // non-fatal; UX continues
+    }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const msg = `🎉 I just won ₹${amount} OFF at Ceevees Mart Back-to-School Scratch & Win! ${SHARE_MESSAGE}`;
     window.open(whatsappShareUrl(msg), "_blank");
-    setTimeout(() => {
+    try {
+      if (mobile) {
+        const res = await sharedFn({ data: { mobile } });
+        updateSession({ shared: true, couponCode: res.couponCode });
+      } else {
+        updateSession({ shared: true });
+      }
+    } catch {
       updateSession({ shared: true });
-      toast.success("Reward unlocked! 🎁");
-      navigate({ to: "/reward" });
-    }, 800);
+    }
+    toast.success("Reward unlocked! 🎁");
+    setTimeout(() => navigate({ to: "/reward" }), 600);
   };
 
   return (
