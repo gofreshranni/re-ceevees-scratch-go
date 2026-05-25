@@ -94,8 +94,8 @@ export function ScratchCard({ width = 320, height = 320, onComplete, children }:
       if (pixels[i] === 0) cleared++;
     }
     const total = pixels.length / (4 * step);
-    // Auto-reveal after just 20% scratched
-    if (cleared / total > 0.2) {
+    // Auto-reveal quickly so the prize and celebration are easy to reach.
+    if (cleared / total > 0.08) {
       autoReveal();
     }
   };
