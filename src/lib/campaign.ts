@@ -83,10 +83,8 @@ export function pickReward(): Reward {
 }
 
 export function generateCoupon(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out = "CVM-";
-  for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)];
-  return out;
+  const randNum = Math.floor(Math.random() * 10000) + 1;
+  return `CVM-${randNum}`;
 }
 
 export function getExpiryDate(): string {

@@ -7,11 +7,12 @@ function pickCashAmount(): number {
 }
 
 function generateCoupon(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out = "CVM-";
-  for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)];
-  return out;
+  const randNum = Math.floor(Math.random() * 10000) + 1;
+  return `CVM-${randNum}`;
 }
+
+// In-memory store for local development when Supabase environment variables are missing
+const mockDb = new Map<string, any>();
 
 const registerSchema = z.object({
   name: z.string().trim().min(2).max(60),
@@ -23,6 +24,30 @@ export const registerForCampaign = createServerFn({ method: "POST" })
   .inputValidator((input) => registerSchema.parse(input))
   .handler(async ({ data }) => {
     const email = data.email && data.email.length > 0 ? data.email : null;
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!hasServiceKey) {
+      console.log("[Campaign Server Fn] No service role key found. Using mock in-memory DB fallback.");
+      const existing = mockDb.get(data.mobile);
+      if (existing) {
+        if (existing.scratched) {
+          throw new Error("This mobile number has already used its scratch card.");
+        }
+        return existing;
+      }
+      const cashAmount = pickCashAmount();
+      const inserted = {
+        id: Math.random().toString(36).substring(2),
+        name: data.name,
+        mobile: data.mobile,
+        cashAmount,
+        scratched: false,
+        shared: false,
+        couponCode: null,
+      };
+      mockDb.set(data.mobile, inserted);
+      return inserted;
+    }
 
     const { data: existing, error: selErr } = await supabaseAdmin
       .from("registrations")
@@ -70,6 +95,16 @@ const mobileSchema = z.object({ mobile: z.string().regex(/^[6-9]\d{9}$/) });
 export const markScratched = createServerFn({ method: "POST" })
   .inputValidator((input) => mobileSchema.parse(input))
   .handler(async ({ data }) => {
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!hasServiceKey) {
+      const existing = mockDb.get(data.mobile);
+      if (!existing) throw new Error("Registration not found in local mock DB");
+      existing.scratched = true;
+      mockDb.set(data.mobile, existing);
+      return { cashAmount: existing.cashAmount as number, scratched: true };
+    }
+
     const { data: row, error } = await supabaseAdmin
       .from("registrations")
       .update({ scratched: true })
@@ -83,6 +118,22 @@ export const markScratched = createServerFn({ method: "POST" })
 export const markShared = createServerFn({ method: "POST" })
   .inputValidator((input) => mobileSchema.parse(input))
   .handler(async ({ data }) => {
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!hasServiceKey) {
+      const existing = mockDb.get(data.mobile);
+      if (!existing) throw new Error("Registration not found in local mock DB");
+      const coupon = existing.couponCode ?? generateCoupon();
+      existing.shared = true;
+      existing.couponCode = coupon;
+      mockDb.set(data.mobile, existing);
+      return {
+        cashAmount: existing.cashAmount as number,
+        couponCode: coupon,
+        shared: true,
+      };
+    }
+
     const { data: existing, error: selErr } = await supabaseAdmin
       .from("registrations")
       .select("coupon_code")
@@ -105,4 +156,58 @@ export const markShared = createServerFn({ method: "POST" })
       couponCode: row.coupon_code as string,
       shared: true,
     };
+  });
+
+export const getCampaignRegistrations = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!hasServiceKey) {
+      return Array.from(mockDb.values()).map(r => ({
+        id: r.id,
+        name: r.name,
+        mobile: r.mobile,
+        cashAmount: r.cashAmount,
+        scratched: r.scratched,
+        shared: r.shared,
+        couponCode: r.couponCode,
+        created_at: new Date().toISOString(),
+      }));
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("registrations")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    return data.map((r: any) => ({
+      id: r.id as string,
+      name: r.name as string,
+      mobile: r.mobile as string,
+      cashAmount: r.cash_amount as number,
+      scratched: r.scratched as boolean,
+      shared: r.shared as boolean,
+      couponCode: (r.coupon_code as string | null) ?? null,
+      created_at: r.created_at as string,
+    }));
+  });
+
+export const clearCampaignRegistrations = createServerFn({ method: "POST" })
+  .handler(async () => {
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!hasServiceKey) {
+      mockDb.clear();
+      return { success: true };
+    }
+
+    const { error } = await supabaseAdmin
+      .from("registrations")
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+
+    if (error) throw new Error(error.message);
+    return { success: true };
   });

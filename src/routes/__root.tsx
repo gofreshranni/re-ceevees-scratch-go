@@ -10,6 +10,7 @@ import {
 import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
+import logoVaw from "@/assets/vaw-logo.png";
 
 function NotFoundComponent() {
   return (
@@ -116,7 +117,40 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <div className="flex min-h-screen flex-col">
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        
+        {/* Global Premium Footer */}
+        <footer className="border-t border-zinc-900 bg-zinc-950 py-8 text-zinc-400">
+          <div className="mx-auto flex max-w-4xl flex-col items-center justify-between gap-6 px-4 sm:flex-row">
+            {/* Left: Developed by VAW Technologies */}
+            <div className="flex flex-col items-center gap-2 sm:items-start">
+              <div className="flex items-center gap-2">
+                <img src={logoVaw} alt="VAW Technologies" className="h-6 w-auto object-contain" />
+              </div>
+              <p className="text-[11px] font-medium tracking-wide text-zinc-500">
+                Platform developed and designed by <span className="font-semibold text-zinc-300">VAW technologies</span>
+              </p>
+            </div>
+
+            {/* Right: CTA Button */}
+            <div className="flex flex-col items-center gap-1.5 sm:items-end">
+              <a
+                href="https://vawtechnologies.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2 rounded-xl bg-zinc-800 px-4 py-2 text-xs font-bold text-white shadow-pop border border-zinc-700/50 transition-all hover:bg-zinc-700 active:translate-y-0.5"
+              >
+                Create your campaigns and events
+                <span className="inline-block transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+              </a>
+              <p className="text-[10px] text-zinc-600">Grow your business with interactive brand campaigns</p>
+            </div>
+          </div>
+        </footer>
+      </div>
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );

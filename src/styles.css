@@ -105,9 +105,9 @@
 }
 
 @layer utilities {
-  .bg-gradient-hero { background: var(--gradient-hero); }
-  .bg-gradient-gold { background: var(--gradient-gold); }
-  .bg-gradient-confetti { background: var(--gradient-confetti); }
+  .bg-gradient-hero { background-image: var(--gradient-hero); }
+  .bg-gradient-gold { background-image: var(--gradient-gold); }
+  .bg-gradient-confetti { background-image: var(--gradient-confetti); }
   .shadow-pop { box-shadow: var(--shadow-pop); }
   .shadow-card { box-shadow: var(--shadow-card); }
   .text-stroke-dark {

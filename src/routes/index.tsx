@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { BrandHeader } from "@/components/BrandHeader";
+import logo from "@/assets/ceevees-logo.png";
 import { Button } from "@/components/ui/button";
-import offer3get2 from "@/assets/offer-3get2.png";
-import offer2get1 from "@/assets/offer-2get1.png";
-import offerBuy30 from "@/assets/offer-buy30.png";
-import offerBagFree from "@/assets/offer-bagfree.png";
+import offerChaptersCombo from "@/assets/offer-chapters-combo.jpg";
+import offerFreeBagcover from "@/assets/offer-free-bagcover.jpg";
+import offerBuy30Get20 from "@/assets/offer-buy30-get20.png";
+import offerSchoolSale from "@/assets/offer-school-sale.jpg";
 import bagCollection1 from "@/assets/bag-collection-1.png";
 import bagCollection2 from "@/assets/bag-collection-2.png";
+import bagCollection3 from "@/assets/bag-collection-3.jpg";
+import bagCollection4 from "@/assets/bag-collection-4.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,15 +24,17 @@ export const Route = createFileRoute("/")({
 });
 
 const OFFER_BANNERS = [
-  { src: offerBuy30, alt: "Buy 30 Get 20 Free on Chapters Notebooks" },
-  { src: offerBagFree, alt: "Back to School Free Bag Cover or 3 Notebooks with every school bag" },
-  { src: offer3get2, alt: "Chapters Notebook — Buy 3 Get 2" },
-  { src: offer2get1, alt: "Chapters Notebook — Buy 2 Get 1" },
+  { src: offerChaptersCombo, alt: "Chapters Notebooks — Buy 3 Get 2 & Buy 2 Get 1 Offers" },
+  { src: offerFreeBagcover, alt: "Free Bag Cover or 3 Notebooks with every school bag" },
+  { src: offerBuy30Get20, alt: "Buy 30 Get 20 Free on Chapters Notebooks" },
+  { src: offerSchoolSale, alt: "Back to School Mega Sale Campaign Banner" },
 ];
 
 const BAG_COLLECTIONS = [
   { src: bagCollection1, alt: "Exclusive School Bag Collections — Frozen, Spider-Man, Batman & more" },
   { src: bagCollection2, alt: "Premium School Bag Collections — Wild Army, Quest, Safari" },
+  { src: bagCollection3, alt: "New Exclusive School Bag Arrivals — Wild Army Spotlight Collections" },
+  { src: bagCollection4, alt: "New Premium School Bag Arrivals — Built For Big Dreams Series" },
 ];
 
 const CATEGORIES = [
@@ -47,8 +51,6 @@ const CATEGORIES = [
 function LandingPage() {
   return (
     <div className="min-h-screen">
-      <BrandHeader />
-
       <section className="relative overflow-hidden bg-gradient-to-br from-[oklch(0.45_0.18_250)] via-[oklch(0.38_0.20_255)] to-[oklch(0.28_0.18_260)]">
         <div className="absolute inset-0 opacity-20"
           style={{
@@ -58,6 +60,16 @@ function LandingPage() {
           }}
         />
         <div className="relative mx-auto max-w-5xl px-4 py-12 text-center text-primary-foreground md:py-20">
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="mx-auto mb-8 flex justify-center"
+          >
+            <div className="rounded-3xl bg-white p-3 shadow-pop border-2 border-gold/30 hover:scale-105 transition-transform duration-300">
+              <img src={logo} alt="Ceevees Mart" className="h-16 md:h-20 w-auto object-contain" />
+            </div>
+          </motion.div>
+
           <motion.div
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -108,10 +120,10 @@ function LandingPage() {
 
       <section className="mx-auto max-w-6xl px-4 py-12 md:py-16">
         <div className="mb-8 text-center">
-          <h2 className="text-3xl font-black md:text-4xl">🔥 This Week's Mega Deals</h2>
+          <h2 className="text-3xl font-black md:text-4xl">🔥 BACK TO SCHOOL MEGA DEALS</h2>
           <p className="mt-2 text-muted-foreground">Real offers running in-store at Ceevees Mart, Ranni</p>
         </div>
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 items-start">
           {OFFER_BANNERS.map((b, i) => (
             <motion.div
               key={b.alt}
@@ -142,7 +154,7 @@ function LandingPage() {
             </h2>
             <p className="mt-2 text-sm text-white/80 md:text-base">Style. Comfort. Durability. Everything for every student.</p>
           </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 items-start">
             {BAG_COLLECTIONS.map((b, i) => (
               <motion.div
                 key={b.alt}

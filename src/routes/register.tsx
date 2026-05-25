@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
-import { BrandHeader } from "@/components/BrandHeader";
+import logo from "@/assets/ceevees-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,8 +61,17 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-accent/30">
-      <BrandHeader />
-      <div className="mx-auto flex max-w-md flex-col items-center px-4 py-10">
+      <div className="mx-auto flex max-w-md flex-col items-center px-4 py-8 md:py-12">
+        <motion.div
+          initial={{ y: -10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="mb-6 flex justify-center"
+        >
+          <div className="rounded-2xl bg-white p-2.5 shadow-pop border-2 border-gold/30">
+            <img src={logo} alt="Ceevees Mart" className="h-12 md:h-14 w-auto object-contain" />
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { BrandHeader } from "@/components/BrandHeader";
+import logo from "@/assets/ceevees-logo.png";
 import { Button } from "@/components/ui/button";
 import { getSession, SHARE_MESSAGE, updateSession, whatsappShareUrl } from "@/lib/campaign";
 import { toast } from "sonner";
@@ -44,8 +44,17 @@ function Unlock() {
 
   return (
     <div className="min-h-screen bg-accent/30">
-      <BrandHeader />
-      <div className="mx-auto max-w-md px-4 py-10 text-center">
+      <div className="mx-auto max-w-md px-4 py-8 md:py-12 text-center flex flex-col items-center">
+        <motion.div
+          initial={{ y: -10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="mb-6 flex justify-center"
+        >
+          <div className="rounded-2xl bg-white p-2.5 shadow-pop border-2 border-gold/30">
+            <img src={logo} alt="Ceevees Mart" className="h-12 md:h-14 w-auto object-contain" />
+          </div>
+        </motion.div>
+
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}

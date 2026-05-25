@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useServerFn } from "@tanstack/react-start";
-import { BrandHeader } from "@/components/BrandHeader";
+import logo from "@/assets/ceevees-logo.png";
 import { ScratchCard } from "@/components/ScratchCard";
 import { Button } from "@/components/ui/button";
 import { getSession, updateSession } from "@/lib/campaign";
@@ -33,7 +33,10 @@ function Scratch() {
     setName(s.name);
     setMobile(s.mobile);
     setAmount(s.cashAmount ?? null);
-    if (s.scratched) setShowPopup(true);
+    if (s.scratched) {
+      // If already scratched, bypass the scratch card and go directly to rewards
+      navigate({ to: "/reward" });
+    }
   }, [navigate]);
 
   const fireConfetti = () => {
@@ -50,8 +53,15 @@ function Scratch() {
 
   const handleComplete = async () => {
     updateSession({ scratched: true });
+    sessionStorage.setItem("just_scratched", "true");
     fireConfetti();
-    setTimeout(() => setShowPopup(true), 400);
+    setShowPopup(true);
+    
+    // Auto-redirect to the reward page after 2.5 seconds
+    setTimeout(() => {
+      navigate({ to: "/reward" });
+    }, 2500);
+
     try {
       if (mobile) await scratchFn({ data: { mobile } });
     } catch {
@@ -59,14 +69,19 @@ function Scratch() {
     }
   };
 
-  const handleContinue = () => {
-    navigate({ to: "/reward" });
-  };
-
   return (
     <div className="min-h-screen bg-accent/30">
-      <BrandHeader />
-      <div className="mx-auto flex max-w-md flex-col items-center px-4 py-10 text-center">
+      <div className="mx-auto flex max-w-md flex-col items-center px-4 py-8 md:py-12 text-center">
+        <motion.div
+          initial={{ y: -10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="mb-6 flex justify-center"
+        >
+          <div className="rounded-2xl bg-white p-2.5 shadow-pop border-2 border-gold/30">
+            <img src={logo} alt="Ceevees Mart" className="h-12 md:h-14 w-auto object-contain" />
+          </div>
+        </motion.div>
+
         <motion.h1
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -99,7 +114,7 @@ function Scratch() {
       </div>
 
       <AnimatePresence>
-        {showPopup && amount !== null && (
+        {showPopup && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -111,33 +126,48 @@ function Scratch() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", duration: 0.6 }}
-              className="relative w-full max-w-sm overflow-hidden rounded-3xl border-4 border-gold bg-card shadow-pop"
+              className="relative w-full max-w-sm overflow-hidden rounded-3xl border-4 border-gold bg-card shadow-pop animate-pulse-subtle"
             >
-              <div className="bg-gradient-hero px-6 pb-6 pt-8 text-center text-primary-foreground">
+              <div className="bg-gradient-hero px-6 pb-8 pt-10 text-center text-primary-foreground">
                 <motion.div
-                  animate={{ rotate: [0, -10, 10, -10, 10, 0] }}
-                  transition={{ duration: 1, delay: 0.3 }}
-                  className="text-7xl"
+                  animate={{ 
+                    scale: [1, 1.15, 1],
+                    rotate: [0, -10, 10, -10, 10, 0] 
+                  }}
+                  transition={{ 
+                    duration: 1.6,
+                    repeat: Infinity,
+                    repeatType: "reverse"
+                  }}
+                  className="text-8xl filter drop-shadow-md mb-2"
                 >
                   🎉
                 </motion.div>
-                <h2 className="mt-3 text-3xl font-black uppercase">Congratulations!</h2>
-                <p className="mt-1 text-sm opacity-90">You won a prize!</p>
-                <div className="my-5 inline-block rounded-2xl bg-gradient-gold px-6 py-3 text-gold-foreground shadow-card">
-                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-80">Cash Discount</p>
-                  <p className="font-display text-5xl font-black">₹{amount} OFF</p>
+                <h2 className="mt-4 text-3xl font-black uppercase tracking-tight">Congratulations!</h2>
+                <p className="mt-2 text-base font-medium opacity-90">You won a special Back-to-School gift!</p>
+                
+                <div className="my-6 flex flex-col items-center justify-center">
+                  <div className="relative flex items-center justify-center size-20">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                      className="absolute inset-0 rounded-full border-4 border-dashed border-gold opacity-80"
+                    />
+                    <motion.span
+                      animate={{ scale: [0.9, 1.1, 0.9] }}
+                      transition={{ repeat: Infinity, duration: 1.5 }}
+                      className="text-4xl"
+                    >
+                      🎁
+                    </motion.span>
+                  </div>
+                  <p className="mt-4 text-xs font-bold tracking-wider uppercase text-gold animate-pulse">
+                    Preparing your reward...
+                  </p>
                 </div>
-                <p className="text-xs opacity-90">
-                  🔒 Your prize is locked — unlock it on the next step
-                </p>
-              </div>
-
-              <div className="space-y-3 p-5">
-                <Button onClick={handleContinue} variant="hero" size="xl" className="w-full">
-                  Continue to Claim →
-                </Button>
-                <p className="text-center text-[11px] text-muted-foreground">
-                  One quick share unlocks your reward
+                
+                <p className="text-xs opacity-80 max-w-[240px] mx-auto">
+                  Taking you to the reward page to claim and unlock your coupon!
                 </p>
               </div>
             </motion.div>
