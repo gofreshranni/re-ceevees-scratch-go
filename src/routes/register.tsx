@@ -89,7 +89,7 @@ function Register() {
               <Label htmlFor="email">Email <span className="text-xs text-muted-foreground">(optional)</span></Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" maxLength={100} className="mt-1.5 h-12 text-base" />
             </div>
-            <Button type="submit" variant="hero" size="xl" className="w-full">Get My Scratch Card →</Button>
+            <Button type="submit" variant="hero" size="xl" className="w-full" disabled={submitting}>{submitting ? "Just a moment…" : "Get My Scratch Card →"}</Button>
             <p className="text-center text-[11px] text-muted-foreground">By continuing you agree to the campaign terms.</p>
           </form>
         </motion.div>
