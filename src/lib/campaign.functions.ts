@@ -13,6 +13,7 @@ function generateCoupon(): string {
 
 // In-memory store for local development when Supabase environment variables are missing
 const mockDb = new Map<string, any>();
+const mockLeadsDb = new Map<string, any>();
 
 const registerSchema = z.object({
   name: z.string().trim().min(2).max(60),
@@ -205,6 +206,80 @@ export const clearCampaignRegistrations = createServerFn({ method: "POST" })
 
     const { error } = await supabaseAdmin
       .from("registrations")
+      .delete()
+      .neq("id", "00000000-0000-0000-0000-000000000000");
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+const leadSchema = z.object({
+  name: z.string().trim().min(2).max(60),
+  mobile: z.string().regex(/^[6-9]\d{9}$/, "Invalid mobile"),
+});
+
+export const submitCampaignLead = createServerFn({ method: "POST" })
+  .inputValidator((input) => leadSchema.parse(input))
+  .handler(async ({ data }) => {
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!hasServiceKey) {
+      const id = Math.random().toString(36).substring(2);
+      const inserted = {
+        id,
+        name: data.name,
+        mobile: data.mobile,
+        created_at: new Date().toISOString(),
+      };
+      mockLeadsDb.set(id, inserted);
+      return inserted;
+    }
+
+    const { data: inserted, error } = await (supabaseAdmin as any)
+      .from("campaign_leads")
+      .insert({ name: data.name, mobile: data.mobile })
+      .select("*")
+      .single();
+
+    if (error) throw new Error(error.message);
+    return inserted;
+  });
+
+export const getCampaignLeads = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!hasServiceKey) {
+      return Array.from(mockLeadsDb.values()).sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    }
+
+    const { data, error } = await (supabaseAdmin as any)
+      .from("campaign_leads")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data.map((r: any) => ({
+      id: r.id as string,
+      name: r.name as string,
+      mobile: r.mobile as string,
+      created_at: r.created_at as string,
+    }));
+  });
+
+export const clearCampaignLeads = createServerFn({ method: "POST" })
+  .handler(async () => {
+    const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!hasServiceKey) {
+      mockLeadsDb.clear();
+      return { success: true };
+    }
+
+    const { error } = await (supabaseAdmin as any)
+      .from("campaign_leads")
       .delete()
       .neq("id", "00000000-0000-0000-0000-000000000000");
 

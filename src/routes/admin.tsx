@@ -18,7 +18,12 @@ import {
 import ceeveesLogo from "@/assets/ceevees-logo.png";
 import vawLogo from "@/assets/vaw-logo.png";
 import { Button } from "@/components/ui/button";
-import { getCampaignRegistrations, clearCampaignRegistrations } from "@/lib/campaign.functions";
+import {
+  getCampaignRegistrations,
+  clearCampaignRegistrations,
+  getCampaignLeads,
+  clearCampaignLeads,
+} from "@/lib/campaign.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
@@ -40,6 +45,8 @@ interface Participant {
 function AdminPage() {
   const getSubmissions = useServerFn(getCampaignRegistrations);
   const clearDb = useServerFn(clearCampaignRegistrations);
+  const getLeads = useServerFn(getCampaignLeads);
+  const clearLeads = useServerFn(clearCampaignLeads);
 
   const [passcode, setPasscode] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -49,6 +56,10 @@ function AdminPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"all" | "scratched" | "unlocked">("all");
+
+  const [activeTab, setActiveTab] = useState<"contestants" | "leads">("contestants");
+  const [leads, setLeads] = useState<any[]>([]);
+  const [loadingLeads, setLoadingLeads] = useState(false);
 
   // Check session storage on mount to retain login state
   useEffect(() => {
@@ -74,13 +85,32 @@ function AdminPage() {
 
   const fetchData = async () => {
     setLoading(true);
+    setLoadingLeads(true);
     try {
-      const res = await getSubmissions();
-      setParticipants(res as Participant[]);
+      const [resSubmissions, resLeads] = await Promise.all([
+        getSubmissions(),
+        getLeads(),
+      ]);
+      setParticipants(resSubmissions as Participant[]);
+      setLeads(resLeads as any[]);
     } catch (err: any) {
       toast.error(err.message || "Failed to load registrations");
     } finally {
       setLoading(false);
+      setLoadingLeads(false);
+    }
+  };
+
+  const handleClearLeads = async () => {
+    if (!window.confirm("ARE YOU ABSOLUTELY SURE? This will permanently delete ALL campaign creator leads!")) {
+      return;
+    }
+    try {
+      await clearLeads();
+      setLeads([]);
+      toast.success("Campaign creator leads cleared successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to clear leads");
     }
   };
 
@@ -409,159 +439,295 @@ function AdminPage() {
           </div>
         </div>
 
-        {/* Database Control & Export Section */}
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-card rounded-2xl p-4 border border-border shadow-sm">
-          <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-emerald-500 animate-ping"></span>
-            <p className="text-xs font-bold text-muted-foreground">
-              Connected Fallback: <span className="text-foreground">{process.env.SUPABASE_SERVICE_ROLE_KEY ? "Supabase Live DB" : "In-Memory Local DB"}</span>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs px-4 py-2.5 shadow-pop hover:brightness-105 active:translate-y-0.5"
-            >
-              <Download className="size-4" />
-              Export to CSV
-            </button>
-            <button
-              onClick={handleClearDatabase}
-              className="inline-flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
-            >
-              <Trash2 className="size-4" />
-              Reset Database
-            </button>
-          </div>
+        {/* Segmented Tab Switcher */}
+        <div className="flex border-b border-border gap-6 pt-2">
+          <button
+            onClick={() => setActiveTab("contestants")}
+            className={`pb-3 text-sm font-black uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "contestants"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Contest Participants ({participants.length})
+          </button>
+          
+          <button
+            onClick={() => setActiveTab("leads")}
+            className={`pb-3 text-sm font-black uppercase tracking-wider border-b-2 transition-all ${
+              activeTab === "leads"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Campaign Creator Leads ({leads.length})
+          </button>
         </div>
 
-        {/* Participants Table Section */}
-        <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">
-          {/* Controls Bar */}
-          <div className="p-5 border-b border-border flex flex-col md:flex-row gap-4 justify-between items-center bg-accent/5">
-            <div className="relative w-full md:max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search name or mobile..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-input bg-background focus:ring-1 focus:ring-primary outline-none"
-              />
-            </div>
-
-            <div className="flex items-center gap-1 bg-muted p-1 rounded-xl w-full md:w-auto">
-              <button
-                onClick={() => setFilterType("all")}
-                className={`flex-1 md:flex-initial text-center px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  filterType === "all" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                All ({participants.length})
-              </button>
-              <button
-                onClick={() => setFilterType("scratched")}
-                className={`flex-1 md:flex-initial text-center px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  filterType === "scratched" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Scratched ({participants.filter(p => p.scratched).length})
-              </button>
-              <button
-                onClick={() => setFilterType("unlocked")}
-                className={`flex-1 md:flex-initial text-center px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  filterType === "unlocked" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Unlocked ({participants.filter(p => p.shared).length})
-              </button>
-            </div>
-          </div>
-
-          {/* Table Container */}
-          <div className="overflow-x-auto">
-            {loading ? (
-              <div className="p-12 text-center flex flex-col items-center justify-center gap-2">
-                <RefreshCw className="size-8 text-primary animate-spin" />
-                <p className="text-xs font-semibold text-muted-foreground">Loading submissions...</p>
+        {activeTab === "contestants" ? (
+          <div className="space-y-6">
+            {/* Database Control & Export Section */}
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-card rounded-2xl p-4 border border-border shadow-sm">
+              <div className="flex items-center gap-2">
+                <span className="size-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <p className="text-xs font-bold text-muted-foreground">
+                  Connected Fallback: <span className="text-foreground">{process.env.SUPABASE_SERVICE_ROLE_KEY ? "Supabase Live DB" : "In-Memory Local DB"}</span>
+                </p>
               </div>
-            ) : filteredParticipants.length === 0 ? (
-              <div className="p-12 text-center">
-                <Users className="size-10 text-muted-foreground mx-auto mb-2 opacity-50" />
-                <p className="text-sm font-bold text-foreground">No registrations found</p>
-                <p className="text-xs text-muted-foreground">Try clearing search filters or waiting for users to sign up.</p>
-              </div>
-            ) : (
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-muted/40 border-b border-border text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                    <th className="py-3 px-5">Name</th>
-                    <th className="py-3 px-5">Mobile</th>
-                    <th className="py-3 px-5">Prize Won</th>
-                    <th className="py-3 px-5 text-center">Scratched</th>
-                    <th className="py-3 px-5 text-center">Shared</th>
-                    <th className="py-3 px-5">Coupon Code</th>
-                    <th className="py-3 px-5">Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border text-xs">
-                  {filteredParticipants.map((p) => (
-                    <tr key={p.id} className="hover:bg-accent/5 transition-colors">
-                      <td className="py-3.5 px-5 font-bold text-foreground">{p.name}</td>
-                      <td className="py-3.5 px-5 font-semibold text-muted-foreground">{p.mobile}</td>
-                      <td className="py-3.5 px-5 font-black text-primary">₹{p.cashAmount} OFF</td>
-                      <td className="py-3.5 px-5 text-center">
-                        {p.scratched ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-bold text-green-700">
-                            <CheckCircle className="size-3" /> Yes
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-                            <Clock className="size-3" /> No
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-5 text-center">
-                        {p.shared ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                            <CheckCircle className="size-3" /> Yes
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 px-2 py-0.5 text-[10px] font-bold text-slate-600">
-                            <Clock className="size-3" /> No
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-5 font-mono font-bold tracking-wider text-muted-foreground">
-                        {p.couponCode ? (
-                          <span className="rounded bg-muted px-1.5 py-0.5 text-primary">
-                            {p.couponCode}
-                          </span>
-                        ) : (
-                          <span className="text-zinc-400">—</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-5 font-medium text-muted-foreground text-[11px]">
-                        {new Date(p.created_at).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
 
-          {/* Footer stats overview */}
-          <div className="p-4 border-t border-border bg-accent/5 flex items-center justify-between text-[11px] text-muted-foreground font-semibold">
-            <p>Showing {filteredParticipants.length} of {participants.length} entries</p>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1">
-                Designed & Powered by <img src={vawLogo} alt="VAW" className="h-3.5 w-auto object-contain ml-0.5" />
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportCSV}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs px-4 py-2.5 shadow-pop hover:brightness-105 active:translate-y-0.5"
+                >
+                  <Download className="size-4" />
+                  Export to CSV
+                </button>
+                <button
+                  onClick={handleClearDatabase}
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
+                >
+                  <Trash2 className="size-4" />
+                  Reset Database
+                </button>
+              </div>
+            </div>
+
+            {/* Participants Table Section */}
+            <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">
+              {/* Controls Bar */}
+              <div className="p-5 border-b border-border flex flex-col md:flex-row gap-4 justify-between items-center bg-accent/5">
+                <div className="relative w-full md:max-w-xs">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search name or mobile..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-input bg-background focus:ring-1 focus:ring-primary outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1 bg-muted p-1 rounded-xl w-full md:w-auto">
+                  <button
+                    onClick={() => setFilterType("all")}
+                    className={`flex-1 md:flex-initial text-center px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                      filterType === "all" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    All ({participants.length})
+                  </button>
+                  <button
+                    onClick={() => setFilterType("scratched")}
+                    className={`flex-1 md:flex-initial text-center px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                      filterType === "scratched" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Scratched ({participants.filter(p => p.scratched).length})
+                  </button>
+                  <button
+                    onClick={() => setFilterType("unlocked")}
+                    className={`flex-1 md:flex-initial text-center px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                      filterType === "unlocked" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Unlocked ({participants.filter(p => p.shared).length})
+                  </button>
+                </div>
+              </div>
+
+              {/* Table Container */}
+              <div className="overflow-x-auto">
+                {loading ? (
+                  <div className="p-12 text-center flex flex-col items-center justify-center gap-2">
+                    <RefreshCw className="size-8 text-primary animate-spin" />
+                    <p className="text-xs font-semibold text-muted-foreground">Loading submissions...</p>
+                  </div>
+                ) : filteredParticipants.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <Users className="size-10 text-muted-foreground mx-auto mb-2 opacity-50" />
+                    <p className="text-sm font-bold text-foreground">No registrations found</p>
+                    <p className="text-xs text-muted-foreground">Try clearing search filters or waiting for users to sign up.</p>
+                  </div>
+                ) : (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-muted/40 border-b border-border text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                        <th className="py-3 px-5">Name</th>
+                        <th className="py-3 px-5">Mobile</th>
+                        <th className="py-3 px-5">Prize Won</th>
+                        <th className="py-3 px-5 text-center">Scratched</th>
+                        <th className="py-3 px-5 text-center">Shared</th>
+                        <th className="py-3 px-5">Coupon Code</th>
+                        <th className="py-3 px-5">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border text-xs">
+                      {filteredParticipants.map((p) => (
+                        <tr key={p.id} className="hover:bg-accent/5 transition-colors">
+                          <td className="py-3.5 px-5 font-bold text-foreground">{p.name}</td>
+                          <td className="py-3.5 px-5 font-semibold text-muted-foreground">{p.mobile}</td>
+                          <td className="py-3.5 px-5 font-black text-primary">₹{p.cashAmount} OFF</td>
+                          <td className="py-3.5 px-5 text-center">
+                            {p.scratched ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-[10px] font-bold text-green-700">
+                                <CheckCircle className="size-3" /> Yes
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                <Clock className="size-3" /> No
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-5 text-center">
+                            {p.shared ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                                <CheckCircle className="size-3" /> Yes
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 px-2 py-0.5 text-[10px] font-bold text-slate-600">
+                                <Clock className="size-3" /> No
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-5 font-mono font-bold tracking-wider text-muted-foreground">
+                            {p.couponCode ? (
+                              <span className="rounded bg-muted px-1.5 py-0.5 text-primary">
+                                {p.couponCode}
+                              </span>
+                            ) : (
+                              <span className="text-zinc-400">—</span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-5 font-medium text-muted-foreground text-[11px]">
+                            {new Date(p.created_at).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              {/* Footer stats overview */}
+              <div className="p-4 border-t border-border bg-accent/5 flex items-center justify-between text-[11px] text-muted-foreground font-semibold">
+                <p>Showing {filteredParticipants.length} of {participants.length} entries</p>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1">
+                    Designed & Powered by <img src={vawLogo} alt="VAW" className="h-3.5 w-auto object-contain ml-0.5" />
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Leads Control & Export */}
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-card rounded-2xl p-4 border border-border shadow-sm">
+              <div className="flex items-center gap-2">
+                <span className="size-2 rounded-full bg-amber-500 animate-ping"></span>
+                <p className="text-xs font-bold text-muted-foreground">
+                  Active Leads: <span className="text-foreground">{leads.length} campaign creation request(s)</span>
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (leads.length === 0) {
+                      toast.error("No lead data available to export");
+                      return;
+                    }
+                    const headers = ["Lead ID", "Brand / Contact Name", "Contact Mobile", "Date Submitted"];
+                    const rows = leads.map((l) => [
+                      l.id,
+                      l.name,
+                      l.mobile,
+                      new Date(l.created_at).toLocaleString(),
+                    ]);
+                    const csvContent =
+                      "data:text/csv;charset=utf-8," +
+                      [headers.join(","), ...rows.map((e) => e.map(val => `"${val}"`).join(","))].join("\n");
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `vaw_campaign_leads_${new Date().toISOString().split("T")[0]}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    toast.success("Leads CSV downloaded!");
+                  }}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs px-4 py-2.5 shadow-pop hover:brightness-105 active:translate-y-0.5"
+                >
+                  <Download className="size-4" />
+                  Export Leads CSV
+                </button>
+                
+                <button
+                  onClick={handleClearLeads}
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
+                >
+                  <Trash2 className="size-4" />
+                  Reset Leads Data
+                </button>
+              </div>
+            </div>
+
+            {/* Leads Table */}
+            <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                {loadingLeads ? (
+                  <div className="p-12 text-center flex flex-col items-center justify-center gap-2">
+                    <RefreshCw className="size-8 text-primary animate-spin" />
+                    <p className="text-xs font-semibold text-muted-foreground">Loading leads data...</p>
+                  </div>
+                ) : leads.length === 0 ? (
+                  <div className="p-12 text-center">
+                    <Users className="size-10 text-muted-foreground mx-auto mb-2 opacity-50" />
+                    <p className="text-sm font-bold text-foreground">No creator leads found</p>
+                    <p className="text-xs text-muted-foreground">Leads submitted via the global website footer will appear here.</p>
+                  </div>
+                ) : (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-muted/40 border-b border-border text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                        <th className="py-3 px-5">Brand / Contact Name</th>
+                        <th className="py-3 px-5">Contact Mobile</th>
+                        <th className="py-3 px-5">Type</th>
+                        <th className="py-3 px-5">Submission Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border text-xs">
+                      {leads.map((l) => (
+                        <tr key={l.id} className="hover:bg-accent/5 transition-colors">
+                          <td className="py-3.5 px-5 font-bold text-foreground">{l.name}</td>
+                          <td className="py-3.5 px-5 font-semibold text-muted-foreground">{l.mobile}</td>
+                          <td className="py-3.5 px-5">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
+                              🚀 Campaign Inquiry
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-5 font-medium text-muted-foreground text-[11px]">
+                            {new Date(l.created_at).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+              
+              <div className="p-4 border-t border-border bg-accent/5 flex items-center justify-between text-[11px] text-muted-foreground font-semibold">
+                <p>Showing {leads.length} of {leads.length} entries</p>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1">
+                    Powered by VAW Technologies
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
