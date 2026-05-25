@@ -6,8 +6,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { BrandHeader } from "@/components/BrandHeader";
 import { ScratchCard } from "@/components/ScratchCard";
 import { Button } from "@/components/ui/button";
-import { getSession, SHARE_MESSAGE, updateSession, whatsappShareUrl } from "@/lib/campaign";
-import { markScratched, markShared } from "@/lib/campaign.functions";
+import { getSession, updateSession } from "@/lib/campaign";
+import { markScratched } from "@/lib/campaign.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/scratch")({
