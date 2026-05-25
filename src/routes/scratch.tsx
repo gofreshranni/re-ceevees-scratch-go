@@ -37,13 +37,14 @@ function Scratch() {
 
   const fireConfetti = () => {
     confetti({
-      particleCount: 200,
+      particleCount: 260,
       spread: 100,
       origin: { y: 0.5 },
+      zIndex: 1000,
       colors: ["#d62828", "#c9a24a", "#2d6a3f", "#f5d989", "#ffffff"],
     });
-    setTimeout(() => confetti({ particleCount: 120, angle: 60, spread: 70, origin: { x: 0 } }), 250);
-    setTimeout(() => confetti({ particleCount: 120, angle: 120, spread: 70, origin: { x: 1 } }), 450);
+    setTimeout(() => confetti({ particleCount: 140, angle: 60, spread: 70, origin: { x: 0 }, zIndex: 1000 }), 250);
+    setTimeout(() => confetti({ particleCount: 140, angle: 120, spread: 70, origin: { x: 1 }, zIndex: 1000 }), 450);
   };
 
   const handleComplete = () => {
@@ -85,8 +86,9 @@ function Scratch() {
               className="flex flex-col items-center gap-3 text-white"
             >
               <span className="text-6xl">🎁</span>
-              <span className="text-xl font-black uppercase">Your Prize</span>
-              <span className="text-sm opacity-90">Scratch to reveal</span>
+              <span className="text-sm font-black uppercase tracking-widest opacity-90">You won</span>
+              <span className="font-display text-5xl font-black leading-none">₹{amount ?? "--"}</span>
+              <span className="text-xl font-black uppercase">OFF</span>
             </motion.div>
           </ScratchCard>
         </div>
