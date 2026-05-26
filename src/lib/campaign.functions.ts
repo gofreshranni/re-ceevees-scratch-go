@@ -3,7 +3,14 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 function pickCashAmount(): number {
-  return Math.floor(Math.random() * 30) + 1;
+  // Random cash discount:
+  // - 10% chance of getting ₹100 (special reward)
+  // - 90% chance of getting between ₹30 and ₹70 (inclusive)
+  const rand = Math.random();
+  if (rand < 0.10) {
+    return 100;
+  }
+  return Math.floor(Math.random() * 41) + 30;
 }
 
 function generateCoupon(): string {

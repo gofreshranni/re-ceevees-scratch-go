@@ -255,7 +255,7 @@ function RewardPage() {
 
               <div className="mt-4 rounded-lg bg-secondary/10 p-3 text-xs">
                 <p className="font-bold text-secondary">
-                  📍 Valid on minimum purchase of ₹{Math.max(100, amount * 20)}
+                  📍 Valid on minimum purchase of ₹1500
                 </p>
                 <p className="mt-1 text-muted-foreground">
                   Show this code at the billing counter. One per family. Cannot be combined with other offers.
