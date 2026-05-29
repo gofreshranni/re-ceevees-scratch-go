@@ -490,7 +490,7 @@ function AdminPage() {
                 </button>
                 <button
                   onClick={handleClearDatabase}
-                  className="inline-flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
                 >
                   <Trash2 className="size-4" />
                   Reset Database
@@ -670,7 +670,7 @@ function AdminPage() {
                 
                 <button
                   onClick={handleClearLeads}
-                  className="inline-flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
                 >
                   <Trash2 className="size-4" />
                   Reset Leads Data
