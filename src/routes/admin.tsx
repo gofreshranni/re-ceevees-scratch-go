@@ -86,19 +86,24 @@ function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     setLoadingLeads(true);
-    try {
-      const [resSubmissions, resLeads] = await Promise.all([
-        getSubmissions(),
-        getLeads(),
-      ]);
-      setParticipants(resSubmissions as Participant[]);
-      setLeads(resLeads as any[]);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to load registrations");
-    } finally {
-      setLoading(false);
-      setLoadingLeads(false);
+    const [resSubmissions, resLeads] = await Promise.allSettled([
+      getSubmissions(),
+      getLeads(),
+    ]);
+    if (resSubmissions.status === "fulfilled") {
+      setParticipants(resSubmissions.value as Participant[]);
+    } else {
+      console.error("getCampaignRegistrations failed", resSubmissions.reason);
+      toast.error(resSubmissions.reason?.message || "Failed to load registrations");
     }
+    if (resLeads.status === "fulfilled") {
+      setLeads(resLeads.value as any[]);
+    } else {
+      console.error("getCampaignLeads failed", resLeads.reason);
+      toast.error(resLeads.reason?.message || "Failed to load leads");
+    }
+    setLoading(false);
+    setLoadingLeads(false);
   };
 
   const handleClearLeads = async () => {
@@ -471,7 +476,7 @@ function AdminPage() {
               <div className="flex items-center gap-2">
                 <span className="size-2 rounded-full bg-emerald-500 animate-ping"></span>
                 <p className="text-xs font-bold text-muted-foreground">
-                  Connected Fallback: <span className="text-foreground">{process.env.SUPABASE_SERVICE_ROLE_KEY ? "Supabase Live DB" : "In-Memory Local DB"}</span>
+                  Connected to: <span className="text-foreground">Lovable Cloud Database</span>
                 </p>
               </div>
 
@@ -485,7 +490,7 @@ function AdminPage() {
                 </button>
                 <button
                   onClick={handleClearDatabase}
-                  className="inline-flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
                 >
                   <Trash2 className="size-4" />
                   Reset Database
@@ -665,7 +670,7 @@ function AdminPage() {
                 
                 <button
                   onClick={handleClearLeads}
-                  className="inline-flex items-center gap-2 rounded-xl bg-red-650 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 shadow-pop active:translate-y-0.5"
                 >
                   <Trash2 className="size-4" />
                   Reset Leads Data
