@@ -27,7 +27,7 @@ function createSupabaseAdminClient() {
     keyToUse.includes("PUBLISHABLE_KEY");
 
   const finalKey = isInvalidPublishableKey 
-    ? "sb_publishable_tDJmK23ZLOBr5uabl1YV5g_5mytdWOc" 
+    ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzand1Z2ltaGF2a3BzYmltenF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjU4MzYsImV4cCI6MjA5NTI1OTI3MH0.Cwq5BjWsxOlRlTYRrgpAAXeiHgBAW-h1XyCmZpzfbUw" 
     : keyToUse;
 
   return createClient<Database>(SUPABASE_URL, finalKey, {
