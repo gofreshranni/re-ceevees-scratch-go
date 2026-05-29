@@ -89,7 +89,7 @@ export function pickReward(): Reward {
 }
 
 export function generateCoupon(): string {
-  const randNum = Math.floor(Math.random() * 10000) + 1;
+  const randNum = Math.floor(Math.random() * 10001) + 10000;
   return `CVM-${randNum}`;
 }
 

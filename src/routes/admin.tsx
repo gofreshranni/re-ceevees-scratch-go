@@ -433,7 +433,7 @@ function AdminPage() {
               )}
             </div>
             <p className="text-[10px] text-muted-foreground">
-              * Any digit from 1 to 10000 can be randomly chosen for a coupon.
+              * Any digit from 10,000 to 20,000 can be randomly chosen for a coupon.
             </p>
           </div>
 
@@ -456,7 +456,7 @@ function AdminPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase">Balance</p>
-                  <p className="text-xl font-black text-emerald-600">{10000 - uniqueTakenCount} Left</p>
+                  <p className="text-xl font-black text-emerald-600">{10001 - uniqueTakenCount} Left</p>
                 </div>
               </div>
 
@@ -464,13 +464,13 @@ function AdminPage() {
               <div className="w-full h-3 rounded-full bg-accent border border-border overflow-hidden">
                 <div
                   className="h-full bg-primary rounded-full transition-all duration-500"
-                  style={{ width: `${(uniqueTakenCount / 10000) * 100}%` }}
+                  style={{ width: `${(uniqueTakenCount / 10001) * 100}%` }}
                 />
               </div>
               
               <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
-                <span>CVM-1</span>
                 <span>CVM-10000</span>
+                <span>CVM-20000</span>
               </div>
             </div>
 
@@ -479,7 +479,7 @@ function AdminPage() {
                 ⚖️ Rules & Range
               </p>
               <p className="text-[10px] text-muted-foreground mt-1 leading-normal">
-                Coupon codes are strictly formatted as <span className="font-bold text-foreground">CVM-[1 to 10000]</span>, drawing pure numbers at random.
+                Coupon codes are strictly formatted as <span className="font-bold text-foreground">CVM-[10,000 to 20,000]</span>, drawing pure numbers at random.
               </p>
             </div>
           </div>
