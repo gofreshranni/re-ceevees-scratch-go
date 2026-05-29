@@ -5,29 +5,33 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// Hardcoded correct values for the active Supabase project.
+// Env vars on Vercel contained stale keys from an old/dead project,
+// so we use the correct values directly and only allow env override
+// if the key matches the current project ref "isjwugimhavkpsbimzqy".
+const CORRECT_URL = "https://isjwugimhavkpsbimzqy.supabase.co";
+const CORRECT_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzand1Z2ltaGF2a3BzYmltenF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjU4MzYsImV4cCI6MjA5NTY0MTgzNn0.Cwq5BjWsxOlRlTYRrgpAAXeiHgBAW-h1XyCmZpzfbUw";
+const CORRECT_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzand1Z2ltaGF2a3BzYmltenF5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDA2NTgzNiwiZXhwIjoyMDk1NjQxODM2fQ.rYp4S7UU09FBu8-hxYsRjgF3ZAYUs-1k9syAkABJmjQ";
+
+function isKeyForCurrentProject(key: string | undefined): boolean {
+  if (!key || !key.startsWith("eyJ")) return false;
+  try {
+    const payload = JSON.parse(atob(key.split(".")[1]));
+    return payload.ref === "isjwugimhavkpsbimzqy";
+  } catch { return false; }
+}
+
 function createSupabaseAdminClient() {
-  let SUPABASE_URL = process.env.SUPABASE_URL;
-  let SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  let SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+  const envServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const envUrl = process.env.SUPABASE_URL;
 
-  // Auto-resolve placeholder if copied literally from instruction table
-  if (SUPABASE_URL === "same as SUPABASE_URL" || !SUPABASE_URL) {
-    SUPABASE_URL = "https://isjwugimhavkpsbimzqy.supabase.co";
-  }
+  // Only use env vars if they match the current active project
+  const url = (envUrl && envUrl.includes("isjwugimhavkpsbimzqy")) ? envUrl : CORRECT_URL;
+  const key = isKeyForCurrentProject(envServiceKey) ? envServiceKey! : 
+              isKeyForCurrentProject(process.env.SUPABASE_PUBLISHABLE_KEY) ? process.env.SUPABASE_PUBLISHABLE_KEY! :
+              CORRECT_SERVICE_KEY;
 
-  // A valid Supabase key must be a long JWT starting with "eyJ"
-  const isValidServiceKey = !!(SUPABASE_SERVICE_ROLE_KEY && SUPABASE_SERVICE_ROLE_KEY.startsWith("eyJ"));
-  const isValidPublishableKey = !!(SUPABASE_PUBLISHABLE_KEY && SUPABASE_PUBLISHABLE_KEY.startsWith("eyJ"));
-
-  let finalKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzand1Z2ltaGF2a3BzYmltenF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjU4MzYsImV4cCI6MjA5NTY0MTgzNn0.Cwq5BjWsxOlRlTYRrgpAAXeiHgBAW-h1XyCmZpzfbUw";
-
-  if (isValidServiceKey) {
-    finalKey = SUPABASE_SERVICE_ROLE_KEY;
-  } else if (isValidPublishableKey) {
-    finalKey = SUPABASE_PUBLISHABLE_KEY;
-  }
-
-  return createClient<Database>(SUPABASE_URL, finalKey, {
+  return createClient<Database>(url, key, {
     auth: {
       storage: undefined,
       persistSession: false,
@@ -47,3 +51,4 @@ export const supabaseAdmin = new Proxy({} as ReturnType<typeof createSupabaseAdm
     return Reflect.get(_supabaseAdmin, prop, receiver);
   },
 });
+

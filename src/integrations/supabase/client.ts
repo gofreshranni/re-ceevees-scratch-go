@@ -2,22 +2,21 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// Hardcoded correct values for the active Supabase project.
+const CORRECT_URL = "https://isjwugimhavkpsbimzqy.supabase.co";
+const CORRECT_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzand1Z2ltaGF2a3BzYmltenF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjU4MzYsImV4cCI6MjA5NTY0MTgzNn0.Cwq5BjWsxOlRlTYRrgpAAXeiHgBAW-h1XyCmZpzfbUw";
+
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
-  let SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  let SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+  const envUrl = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const envKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
 
-  if (SUPABASE_URL === "same as SUPABASE_URL" || !SUPABASE_URL) {
-    SUPABASE_URL = "https://isjwugimhavkpsbimzqy.supabase.co";
-  }
-  const isValidPublishableKey = !!(SUPABASE_PUBLISHABLE_KEY && SUPABASE_PUBLISHABLE_KEY.startsWith("eyJ"));
+  // Only use env values if they match the current active project
+  const url = (envUrl && envUrl.includes("isjwugimhavkpsbimzqy")) ? envUrl : CORRECT_URL;
+  const key = (envKey && envKey.startsWith("eyJ")) ? envKey : CORRECT_ANON_KEY;
 
-  if (!isValidPublishableKey) {
-    SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzand1Z2ltaGF2a3BzYmltenF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjU4MzYsImV4cCI6MjA5NTY0MTgzNn0.Cwq5BjWsxOlRlTYRrgpAAXeiHgBAW-h1XyCmZpzfbUw";
-  }
-
-  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  return createClient<Database>(url, key, {
     auth: {
       storage: typeof window !== 'undefined' ? localStorage : undefined,
       persistSession: true,
@@ -36,4 +35,5 @@ export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>,
     return Reflect.get(_supabase, prop, receiver);
   },
 });
+
 
