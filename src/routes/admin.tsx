@@ -86,19 +86,24 @@ function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     setLoadingLeads(true);
-    try {
-      const [resSubmissions, resLeads] = await Promise.all([
-        getSubmissions(),
-        getLeads(),
-      ]);
-      setParticipants(resSubmissions as Participant[]);
-      setLeads(resLeads as any[]);
-    } catch (err: any) {
-      toast.error(err.message || "Failed to load registrations");
-    } finally {
-      setLoading(false);
-      setLoadingLeads(false);
+    const [resSubmissions, resLeads] = await Promise.allSettled([
+      getSubmissions(),
+      getLeads(),
+    ]);
+    if (resSubmissions.status === "fulfilled") {
+      setParticipants(resSubmissions.value as Participant[]);
+    } else {
+      console.error("getCampaignRegistrations failed", resSubmissions.reason);
+      toast.error(resSubmissions.reason?.message || "Failed to load registrations");
     }
+    if (resLeads.status === "fulfilled") {
+      setLeads(resLeads.value as any[]);
+    } else {
+      console.error("getCampaignLeads failed", resLeads.reason);
+      toast.error(resLeads.reason?.message || "Failed to load leads");
+    }
+    setLoading(false);
+    setLoadingLeads(false);
   };
 
   const handleClearLeads = async () => {
