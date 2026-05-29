@@ -11,7 +11,9 @@ function createSupabaseClient() {
   if (SUPABASE_URL === "same as SUPABASE_URL" || !SUPABASE_URL) {
     SUPABASE_URL = "https://isjwugimhavkpsbimzqy.supabase.co";
   }
-  if (SUPABASE_PUBLISHABLE_KEY === "same as SUPABASE_PUBLISHABLE_KEY" || !SUPABASE_PUBLISHABLE_KEY) {
+  const isValidPublishableKey = !!(SUPABASE_PUBLISHABLE_KEY && SUPABASE_PUBLISHABLE_KEY.startsWith("eyJ"));
+
+  if (!isValidPublishableKey) {
     SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzand1Z2ltaGF2a3BzYmltenF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjU4MzYsImV4cCI6MjA5NTY0MTgzNn0.Cwq5BjWsxOlRlTYRrgpAAXeiHgBAW-h1XyCmZpzfbUw";
   }
 

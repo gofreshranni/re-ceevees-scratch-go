@@ -15,20 +15,17 @@ function createSupabaseAdminClient() {
     SUPABASE_URL = "https://isjwugimhavkpsbimzqy.supabase.co";
   }
 
-  const isInvalidServiceKey = !SUPABASE_SERVICE_ROLE_KEY || 
-    SUPABASE_SERVICE_ROLE_KEY.includes("copy from") || 
-    SUPABASE_SERVICE_ROLE_KEY.includes("Service role key");
+  // A valid Supabase key must be a long JWT starting with "eyJ"
+  const isValidServiceKey = !!(SUPABASE_SERVICE_ROLE_KEY && SUPABASE_SERVICE_ROLE_KEY.startsWith("eyJ"));
+  const isValidPublishableKey = !!(SUPABASE_PUBLISHABLE_KEY && SUPABASE_PUBLISHABLE_KEY.startsWith("eyJ"));
 
-  // Fallback to publishable key if service role key is not valid
-  const keyToUse = isInvalidServiceKey ? SUPABASE_PUBLISHABLE_KEY : SUPABASE_SERVICE_ROLE_KEY;
+  let finalKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzand1Z2ltaGF2a3BzYmltenF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjU4MzYsImV4cCI6MjA5NTY0MTgzNn0.Cwq5BjWsxOlRlTYRrgpAAXeiHgBAW-h1XyCmZpzfbUw";
 
-  const isInvalidPublishableKey = !keyToUse ||
-    keyToUse.includes("same as") ||
-    keyToUse.includes("PUBLISHABLE_KEY");
-
-  const finalKey = isInvalidPublishableKey 
-    ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlzand1Z2ltaGF2a3BzYmltenF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjU4MzYsImV4cCI6MjA5NTI1OTI3MH0.Cwq5BjWsxOlRlTYRrgpAAXeiHgBAW-h1XyCmZpzfbUw" 
-    : keyToUse;
+  if (isValidServiceKey) {
+    finalKey = SUPABASE_SERVICE_ROLE_KEY;
+  } else if (isValidPublishableKey) {
+    finalKey = SUPABASE_PUBLISHABLE_KEY;
+  }
 
   return createClient<Database>(SUPABASE_URL, finalKey, {
     auth: {
