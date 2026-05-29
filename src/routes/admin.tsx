@@ -23,6 +23,7 @@ import {
   clearCampaignRegistrations,
   getCampaignLeads,
   clearCampaignLeads,
+  getDatabaseStatus,
 } from "@/lib/campaign.functions";
 import { toast } from "sonner";
 
@@ -47,9 +48,11 @@ function AdminPage() {
   const clearDb = useServerFn(clearCampaignRegistrations);
   const getLeads = useServerFn(getCampaignLeads);
   const clearLeads = useServerFn(clearCampaignLeads);
+  const getDbStatus = useServerFn(getDatabaseStatus);
 
   const [passcode, setPasscode] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [dbStatus, setDbStatus] = useState<{ isMock: boolean; supabaseUrl: string } | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -86,9 +89,10 @@ function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     setLoadingLeads(true);
-    const [resSubmissions, resLeads] = await Promise.allSettled([
+    const [resSubmissions, resLeads, resStatus] = await Promise.allSettled([
       getSubmissions(),
       getLeads(),
+      getDbStatus(),
     ]);
     if (resSubmissions.status === "fulfilled") {
       setParticipants(resSubmissions.value as Participant[]);
@@ -101,6 +105,11 @@ function AdminPage() {
     } else {
       console.error("getCampaignLeads failed", resLeads.reason);
       toast.error(resLeads.reason?.message || "Failed to load leads");
+    }
+    if (resStatus.status === "fulfilled") {
+      setDbStatus(resStatus.value);
+    } else {
+      console.error("getDatabaseStatus failed", resStatus.reason);
     }
     setLoading(false);
     setLoadingLeads(false);
@@ -289,6 +298,38 @@ function AdminPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-6">
+        {/* Connection status warning banner */}
+        {dbStatus?.isMock && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-3xl border-2 border-amber-500/40 bg-amber-500/10 p-5 shadow-sm space-y-3 text-left"
+          >
+            <div className="flex items-start gap-3">
+              <span className="text-xl">⚠️</span>
+              <div>
+                <h4 className="text-sm font-black text-amber-800 uppercase tracking-wider">
+                  Using Local In-Memory Database (Action Required)
+                </h4>
+                <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+                  Your production deployment is currently running on an <strong>In-Memory Mock Database</strong> fallback, which resets to empty whenever your serverless function spins down. This happens because the <strong>SUPABASE_SERVICE_ROLE_KEY</strong> in your Vercel Environment Variables is missing, empty, or set to the placeholder string.
+                </p>
+              </div>
+            </div>
+            <div className="text-xs text-amber-800 bg-amber-500/15 p-4 rounded-2xl border border-amber-500/20 font-medium space-y-2">
+              <p className="font-bold">How to connect your Supabase database in Vercel:</p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Go to your <strong>Lovable Cloud Settings &rarr; Backend</strong>.</li>
+                <li>Copy the actual <strong>Service role key</strong> (it should be a long string starting with <code className="bg-amber-200/50 px-1 rounded">eyJhbGciOi...</code>).</li>
+                <li>Go to your <strong>Vercel Dashboard &rarr; Settings &rarr; Environment Variables</strong>.</li>
+                <li>Locate <strong>SUPABASE_SERVICE_ROLE_KEY</strong> and replace the placeholder text with your actual copied key.</li>
+                <li>Also ensure <strong>VITE_SUPABASE_URL</strong> and <strong>VITE_SUPABASE_PUBLISHABLE_KEY</strong> are populated with the actual URL and Publishable Key instead of "same as ..." placeholders.</li>
+                <li>Re-deploy your project in Vercel to apply the changes.</li>
+              </ol>
+            </div>
+          </motion.div>
+        )}
+
         {/* Core Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <motion.div
@@ -474,9 +515,9 @@ function AdminPage() {
             {/* Database Control & Export Section */}
             <div className="flex flex-wrap items-center justify-between gap-4 bg-card rounded-2xl p-4 border border-border shadow-sm">
               <div className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span className={`size-2 rounded-full animate-ping ${dbStatus?.isMock ? "bg-amber-500" : "bg-emerald-500"}`}></span>
                 <p className="text-xs font-bold text-muted-foreground">
-                  Connected to: <span className="text-foreground">Lovable Cloud Database</span>
+                  Connected Database: <span className="text-foreground">{dbStatus ? (dbStatus.isMock ? "Mock Database (Local)" : "Supabase Live DB") : "Checking..."}</span>
                 </p>
               </div>
 
