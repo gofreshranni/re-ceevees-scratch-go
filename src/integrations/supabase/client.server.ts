@@ -12,7 +12,7 @@ function createSupabaseAdminClient() {
 
   // Auto-resolve placeholder if copied literally from instruction table
   if (SUPABASE_URL === "same as SUPABASE_URL" || !SUPABASE_URL) {
-    SUPABASE_URL = "https://tcmrqclkuwqbkjizrqta.supabase.co";
+    SUPABASE_URL = "https://isjwugimhavkpsbimzqy.supabase.co";
   }
 
   const isInvalidServiceKey = !SUPABASE_SERVICE_ROLE_KEY || 
@@ -27,7 +27,7 @@ function createSupabaseAdminClient() {
     keyToUse.includes("PUBLISHABLE_KEY");
 
   const finalKey = isInvalidPublishableKey 
-    ? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjbXJxY2xrdXdxYmpraXpycXRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2ODMyNzAsImV4cCI6MjA5NTI1OTI3MH0.1iMIDTHdOXxbYwC39n8T8ptJBmLXjygiQ4GtVh_Dg08" 
+    ? "sb_publishable_tDJmK23ZLOBr5uabl1YV5g_5mytdWOc" 
     : keyToUse;
 
   return createClient<Database>(SUPABASE_URL, finalKey, {

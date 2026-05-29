@@ -309,6 +309,6 @@ export const getDatabaseStatus = createServerFn({ method: "GET" })
 
     return {
       isMock: false, // We always return false because we have successfully connected to Supabase using the anon key fallback!
-      supabaseUrl: process.env.SUPABASE_URL || "https://tcmrqclkuwqbkjizrqta.supabase.co",
+      supabaseUrl: process.env.SUPABASE_URL || "https://isjwugimhavkpsbimzqy.supabase.co",
     };
   });
