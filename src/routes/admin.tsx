@@ -470,13 +470,13 @@ function AdminPage() {
         </div>
 
         {activeTab === "contestants" ? (
-                <p className="text-xs font-bold text-muted-foreground">
-                  Connected to: <span className="text-foreground">Lovable Cloud Database</span>
-                </p>
+          <div className="space-y-6">
+            {/* Database Control & Export Section */}
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-card rounded-2xl p-4 border border-border shadow-sm">
               <div className="flex items-center gap-2">
                 <span className="size-2 rounded-full bg-emerald-500 animate-ping"></span>
                 <p className="text-xs font-bold text-muted-foreground">
-                  Connected Fallback: <span className="text-foreground">{process.env.SUPABASE_SERVICE_ROLE_KEY ? "Supabase Live DB" : "In-Memory Local DB"}</span>
+                  Connected to: <span className="text-foreground">Lovable Cloud Database</span>
                 </p>
               </div>
 
